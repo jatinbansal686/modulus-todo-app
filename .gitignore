@@ -1,0 +1,72 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment — never commit real secrets. `.env.example` IS committed.
+.env
+.env.*
+!.env.example
+
+# Testing
+coverage/
+*.lcov
+.nyc_output/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+._*
+
+# Editors
+.idea/
+*.swp
+*.swo
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# --- React Native / Android ---
+.gradle/
+local.properties
+*.hprof
+.cxx/
+apps/mobile/android/app/build/
+apps/mobile/android/build/
+apps/mobile/android/.gradle/
+
+# Metro / Haste
+.metro-health-check*
+metro-cache/
+.expo/
+
+# Release signing — the keystore and its passwords must never reach the repo.
+*.keystore
+!debug.keystore
+keystore.properties
+
+# Build artefacts
+*.apk
+*.aab
+
+# --- iOS (not targeted, but the RN template generates it) ---
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+*.xcworkspace
+!default.xcworkspace
+
+# Generated API docs
+openapi.json
