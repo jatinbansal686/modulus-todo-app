@@ -26,6 +26,6 @@ import {
   controllers: [AuthController],
   providers: [AuthService, PasswordService, RefreshTokenService, JwtAuthGuard],
   // JwtAuthGuard is exported so app.module.ts can register it as the global APP_GUARD.
-  exports: [AuthService, JwtAuthGuard, JwtModule],
+  exports: [AuthService, PasswordService, JwtAuthGuard, JwtModule],
 })
 export class AuthModule {}
