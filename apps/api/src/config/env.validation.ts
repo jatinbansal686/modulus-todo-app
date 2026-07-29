@@ -26,7 +26,11 @@ export const envValidationSchema = Joi.object({
   // 32 bytes minimum. A short secret is the difference between "signed" and "signed
   // by anyone who can run a wordlist".
   JWT_ACCESS_SECRET: Joi.string().min(32).required(),
-  JWT_ACCESS_TTL: Joi.string().default('15m'),
+  // Pattern-enforced so the `as Duration` cast in configuration.ts is guaranteed
+  // correct at runtime rather than assumed.
+  JWT_ACCESS_TTL: Joi.string()
+    .pattern(/^\d+[smhd]$/)
+    .default('15m'),
   JWT_REFRESH_TTL_DAYS: Joi.number().integer().min(1).default(30),
 
   // Pepper for hashing refresh tokens. Distinct from the JWT secret so that rotating
