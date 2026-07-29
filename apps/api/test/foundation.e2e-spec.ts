@@ -5,7 +5,6 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/bootstrap/configure-app';
 import type { ErrorEnvelope } from '../src/common/errors/error-codes';
-import { startInMemoryMongo, stopInMemoryMongo, testEnv } from './setup-e2e';
 
 /** supertest types `res.body` as `any`; these give the assertions a real shape to
  *  check against, which is the whole point of testing the envelope contract. */
@@ -28,8 +27,9 @@ describe('API foundation (e2e)', () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {
-    testEnv(await startInMemoryMongo());
-
+    // Environment and the in-memory MongoDB are provisioned by Jest's globalSetup,
+    // which runs before this module is even imported — necessary because AppModule
+    // validates config at import time.
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -52,7 +52,6 @@ describe('API foundation (e2e)', () => {
 
   afterAll(async () => {
     await app?.close();
-    await stopInMemoryMongo();
   });
 
   describe('health', () => {
