@@ -1,0 +1,26 @@
+{
+  "name": "modulus-todo-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Android To-Do app (React Native CLI + TypeScript) backed by a NestJS + MongoDB API",
+  "license": "MIT",
+  "engines": {
+    "node": "22.18.0"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "api": "npm --prefix apps/api run",
+    "mobile": "npm --prefix apps/mobile run"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.1",
+    "@commitlint/config-conventional": "21.2.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.2.0",
+    "prettier": "^3.9.6"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "prettier --write",
+    "*.{json,md,yml,yaml}": "prettier --write"
+  }
+}

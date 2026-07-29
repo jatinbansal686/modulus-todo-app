@@ -10,18 +10,19 @@ sorted by a transparent urgency score that blends all three time/priority signal
 
 ## ⏱️ Evaluate this in 5 minutes
 
-| | |
-|---|---|
-| 📱 **Install the app** | _APK link — added at release_ |
-| 🔑 **Demo account** | _credentials — added at release_ |
-| 🌐 **API docs (Swagger)** | _hosted URL — added at release_ |
-| 🎬 **90-second demo** | _video — added at release_ |
+|                           |                                  |
+| ------------------------- | -------------------------------- |
+| 📱 **Install the app**    | _APK link — added at release_    |
+| 🔑 **Demo account**       | _credentials — added at release_ |
+| 🌐 **API docs (Swagger)** | _hosted URL — added at release_  |
+| 🎬 **90-second demo**     | _video — added at release_       |
 
 > ⚠️ **The API is on a free tier and sleeps after 15 minutes idle.** The first request can take
 > up to a minute while it wakes up. Everything is instant after that — this is a hosting-tier
 > characteristic, not a bug in the app.
 
 **Three things worth trying**
+
 1. Create a task with both a **"Scheduled for"** time and a **"Due by"** deadline, then switch the
    list to **Smart** sort and watch it reorder.
 2. Mark something complete — the status changes in place, optimistically, before the server replies.
@@ -34,14 +35,14 @@ sorted by a transparent urgency score that blends all three time/priority signal
 
 🚧 **In progress.** This README is filled in as the milestones land.
 
-| Milestone | State |
-|---|---|
-| Phase 0 — toolchain | ✅ Done |
-| Repo, hooks, CI | 🚧 In progress |
-| API — foundation, auth, tasks | ⬜ |
-| Mobile — foundation, auth, tasks | ⬜ |
-| Smart sort | ⬜ |
-| Deploy + signed APK + demo | ⬜ |
+| Milestone                        | State          |
+| -------------------------------- | -------------- |
+| Phase 0 — toolchain              | ✅ Done        |
+| Repo, hooks, CI                  | 🚧 In progress |
+| API — foundation, auth, tasks    | ⬜             |
+| Mobile — foundation, auth, tasks | ⬜             |
+| Smart sort                       | ⬜             |
+| Deploy + signed APK + demo       | ⬜             |
 
 ---
 
