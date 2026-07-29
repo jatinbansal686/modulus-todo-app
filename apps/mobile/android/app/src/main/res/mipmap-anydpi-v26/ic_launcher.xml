@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive icon (API 26+). The launcher composites these two layers and applies
+  its own mask, so the foreground must keep its content inside the central 72dp
+  of the 108dp canvas — generate-icons.js draws the mark at 60dp to guarantee that.
+
+  The legacy square PNGs in mipmap-<density>/ic_launcher.png remain for API 24-25,
+  which is below the adaptive-icon threshold but above our minSdk of 24.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+    <monochrome android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>

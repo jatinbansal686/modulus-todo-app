@@ -1,0 +1,11 @@
+/*
+ * NativeWind's entry stylesheet.
+ *
+ * Metro compiles this through Tailwind and hands the result to
+ * react-native-css-interop, which is what turns a `className` into real RN styles.
+ * It is referenced from metro.config.js and imported once from the app root; there
+ * is no CSS in this project beyond these three directives.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

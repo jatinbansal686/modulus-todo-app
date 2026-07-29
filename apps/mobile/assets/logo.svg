@@ -1,0 +1,33 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    The app mark: a three-quarter urgency ring with a check inside.
+
+    It is the product's signature feature drawn as a logo — the ring is the same
+    0..1 urgency arc the task rows use, and the gap makes it read as "in progress"
+    rather than as a plain circle. Stroke-only so it stays legible at 48dp.
+  -->
+
+  <!-- Track: the unfilled remainder of the ring. -->
+  <path
+    d="M 24,96 A 72,72 0 1,1 168,96 A 72,72 0 1,1 24,96"
+    stroke="#1F2A38"
+    stroke-width="15"
+    fill="none" />
+
+  <!-- Filled arc, 270° clockwise from the top. -->
+  <path
+    d="M 96,24 A 72,72 0 1,1 24,96"
+    stroke="#5296FF"
+    stroke-width="15"
+    stroke-linecap="round"
+    fill="none" />
+
+  <!-- Check. -->
+  <path
+    d="M 62,97 L 86,121 L 132,71"
+    stroke="#FAFAF9"
+    stroke-width="15"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none" />
+</svg>
