@@ -5,6 +5,14 @@
  * exactly one file to look at to know what the app is configured by — and adding a
  * setting without also adding it to `env.validation.ts` is impossible to do quietly.
  */
+/**
+ * A duration in the format `@nestjs/jwt` accepts for `expiresIn` (ms.StringValue).
+ * The `ms` package ships no resolvable types here, so this expresses the subset we
+ * use. Joi enforces the same shape at boot, which is what makes the cast in this
+ * file safe rather than wishful.
+ */
+export type Duration = `${number}${'s' | 'm' | 'h' | 'd'}`;
+
 export interface AppConfig {
   nodeEnv: 'development' | 'test' | 'production';
   isProduction: boolean;
@@ -14,7 +22,7 @@ export interface AppConfig {
   database: { uri: string };
   auth: {
     accessSecret: string;
-    accessTtl: string;
+    accessTtl: Duration;
     refreshTtlDays: number;
     refreshPepper: string;
     passwordPepper: string;
@@ -40,7 +48,7 @@ export default (): AppConfig => {
     },
     auth: {
       accessSecret: process.env.JWT_ACCESS_SECRET as string,
-      accessTtl: process.env.JWT_ACCESS_TTL ?? '15m',
+      accessTtl: (process.env.JWT_ACCESS_TTL ?? '15m') as Duration,
       refreshTtlDays: Number(process.env.JWT_REFRESH_TTL_DAYS ?? 30),
       refreshPepper: process.env.REFRESH_TOKEN_PEPPER as string,
       passwordPepper: process.env.PASSWORD_PEPPER as string,

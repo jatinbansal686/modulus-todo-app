@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Public } from '../auth/decorators/public.decorator';
 import { Connection, ConnectionStates } from 'mongoose';
 
 /**
@@ -13,6 +14,11 @@ import { Connection, ConnectionStates } from 'mongoose';
  * hosting platform's health-check URL stays stable if the API version changes.
  */
 @ApiTags('health')
+// Unauthenticated: the hosting platform's probe has no credentials. Without this the
+// global JwtAuthGuard 401s the health check, the platform marks the instance
+// unhealthy, and the deploy is rolled back — which is exactly what the e2e suite
+// caught the moment the guard was made global.
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(@InjectConnection() private readonly connection: Connection) {}
