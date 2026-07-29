@@ -1,0 +1,132 @@
+# Mobile checks.
+#
+# Same no-`paths:`-filter rule as ci-api.yml — `mobile-ci` is a required check, so
+# it must always report. See that file for the explanation.
+#
+# Deliberately NO `assembleDebug` on pull requests. A cold React Native Android build
+# is 8-15 minutes and would gate every PR; the Android build runs after merge instead
+# (see the `android-build` job), where it is informational rather than blocking.
+# Trade-off, stated plainly: between merges, only the local machine proves the Android
+# build still works — acceptable because `run-android` is exercised constantly while
+# the mobile PRs are being written.
+name: mobile-ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mobile-ci:
+    name: mobile-ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - id: guard
+        name: Decide whether the app needs checking
+        run: |
+          if [ ! -f apps/mobile/package.json ]; then
+            echo "Mobile app is not scaffolded yet — nothing to check."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+            if git diff --name-only "$base"...HEAD | grep -qE '^(apps/mobile/|\.github/workflows/ci-mobile\.yml)'; then
+              echo "run=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "No mobile changes in this PR — skipping."
+              echo "run=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v7.0.0
+        if: steps.guard.outputs.run == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+
+      - name: Install
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/mobile
+        run: npm ci
+
+      - name: Lint
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/mobile
+        run: npm run lint
+
+      - name: Typecheck
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/mobile
+        run: npm run typecheck
+
+      - name: Test
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/mobile
+        run: npm run test:ci
+
+  # Post-merge only. Informational — never blocks a PR.
+  android-build:
+    name: android-build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - id: guard
+        run: |
+          if [ -f apps/mobile/android/gradlew ]; then echo "run=true" >> "$GITHUB_OUTPUT";
+          else echo "Android project not scaffolded yet."; echo "run=false" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: actions/setup-node@v7.0.0
+        if: steps.guard.outputs.run == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+
+      # JDK 17 exactly — React Native 0.86's AGP does not support newer JDKs.
+      - uses: actions/setup-java@v5.6.0
+        if: steps.guard.outputs.run == 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      # The runner ships NDK 27.3/28.2/29.0, but RN 0.86.2 pins 27.1.12297006 and AGP
+      # matches the NDK version EXACTLY with no fallback — without this the build fails.
+      - uses: android-actions/setup-android@v3
+        if: steps.guard.outputs.run == 'true'
+
+      - name: Install matching NDK
+        if: steps.guard.outputs.run == 'true'
+        run: sdkmanager --install "ndk;27.1.12297006"
+
+      - name: Install deps
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/mobile
+        run: npm ci
+
+      # Two ABIs instead of the template's four — each is a separate NDK compile.
+      - name: Assemble debug
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a,x86_64 --no-daemon
+
+      - uses: actions/upload-artifact@v7.0.1
+        if: steps.guard.outputs.run == 'true'
+        with:
+          name: app-debug-apk
+          path: apps/mobile/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn

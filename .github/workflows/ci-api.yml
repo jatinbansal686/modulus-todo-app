@@ -1,0 +1,80 @@
+# API checks.
+#
+# IMPORTANT: this workflow has NO `paths:` filter, on purpose.
+# `api-ci` is a required status check, and GitHub leaves a path-skipped required
+# check permanently "Expected — Waiting for status to be reported", which blocks
+# the PR forever. So the workflow always runs and decides internally whether there
+# is anything to do. See the `guard` step.
+name: api-ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: api-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api-ci:
+    name: api-ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0 # need history to diff against the base branch
+
+      - id: guard
+        name: Decide whether the API needs checking
+        run: |
+          if [ ! -f apps/api/package.json ]; then
+            echo "API is not scaffolded yet — nothing to check."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+            if git diff --name-only "$base"...HEAD | grep -qE '^(apps/api/|\.github/workflows/ci-api\.yml)'; then
+              echo "run=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "No API changes in this PR — skipping."
+              echo "run=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v7.0.0
+        if: steps.guard.outputs.run == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Install
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/api
+        run: npm ci
+
+      - name: Lint
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/api
+        run: npm run lint
+
+      - name: Typecheck
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/api
+        run: npm run typecheck
+
+      # `--passWithNoTests` matters: Jest exits non-zero on "No tests found", which
+      # would hard-block the API's very first PR before any spec file exists.
+      - name: Test
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/api
+        run: npm run test:ci
+
+      - name: Build
+        if: steps.guard.outputs.run == 'true'
+        working-directory: apps/api
+        run: npm run build
