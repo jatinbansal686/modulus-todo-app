@@ -8,6 +8,8 @@ import type { AppConfig } from './config/configuration';
 import { envValidationSchema } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { DemoModule } from './modules/demo/demo.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
 
@@ -37,6 +39,8 @@ import { HealthModule } from './modules/health/health.module';
 
     DatabaseModule,
     AuthModule,
+    TasksModule,
+    DemoModule,
     HealthModule,
   ],
   providers: [
