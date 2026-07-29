@@ -1,0 +1,24 @@
+{
+  "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    "types": ["jest"],
+    "baseUrl": ".",
+    // ⚠️ Mirrors the `module-resolver` alias map in babel.config.js exactly.
+    // Metro ignores this block entirely — it is TypeScript's half of the setting,
+    // and Babel's half is the other. Editing one without the other gives either a
+    // red squiggle on working code or a runtime resolution failure on code that
+    // typechecks.
+    "paths": {
+      "@app/*": ["src/app/*"],
+      "@features/*": ["src/features/*"],
+      "@shared/*": ["src/shared/*"],
+      "@store/*": ["src/store/*"],
+      // Exact-match entry for the bare `@store` specifier. Babel's module-resolver
+      // handles `'@store': './src/store'` with no extra entry, but a TypeScript
+      // `paths` wildcard never matches the un-suffixed form.
+      "@store": ["src/store"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts"],
+  "exclude": ["**/node_modules", "**/Pods"]
+}

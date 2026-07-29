@@ -1,0 +1,10 @@
+<resources>
+    <!--
+      The launcher label. Deliberately distinct from the JS component name in
+      app.json ("modulusTodo"), which AppRegistry.registerComponent and
+      MainActivity's getMainComponentName() must continue to agree on — renaming
+      that yields an "Application modulusTodo has not been registered" red box.
+      This string is only what the user reads under the icon.
+    -->
+    <string name="app_name">Modulus To-Do</string>
+</resources>
