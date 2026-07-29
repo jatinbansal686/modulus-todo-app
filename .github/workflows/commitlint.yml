@@ -1,0 +1,36 @@
+# Commit message check.
+#
+# The husky `commit-msg` hook already does this locally, but a local hook is
+# bypassable with `--no-verify`, so it is re-checked here where it cannot be skipped.
+#
+# Both the individual commits AND the PR title are checked: squash-merge composes the
+# commit that lands on `main` from the PR title, so the PR title is the message a
+# reviewer actually reads in the history.
+name: commitlint
+
+on:
+  pull_request:
+
+jobs:
+  commitlint:
+    name: commitlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint commits in this PR
+        run: npx commitlint --from "origin/${{ github.base_ref }}" --to HEAD --verbose
+
+      - name: Lint the PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s' "$PR_TITLE" | npx commitlint --verbose
