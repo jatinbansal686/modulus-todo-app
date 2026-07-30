@@ -390,3 +390,87 @@ describe('TaskListScreen', () => {
     expect(await screen.findByText('2 of 3 to go')).toBeTruthy();
   });
 });
+
+describe('TaskListScreen — Smart sort', () => {
+  /** A LOW chore due within the hour, and an URGENT task due tomorrow. */
+  const chore = task({
+    id: 'chore',
+    title: 'Water the plants',
+    priority: 'LOW',
+    dueAt: new Date(Date.now() + 3_600_000).toISOString(),
+  });
+  const important = task({
+    id: 'important',
+    title: 'Submit the assignment',
+    priority: 'URGENT',
+    dueAt: new Date(Date.now() + 24 * 3_600_000).toISOString(),
+  });
+
+  /**
+   * ⚠️ These tests assert the *wiring*, not the ordering — and the distinction is
+   * forced by FlashList, not by laziness.
+   *
+   * FlashList v2 recycles: it keeps a stable pool of view holders and moves them
+   * by offset rather than reordering the element tree. So `getAllByText` returns
+   * the same sequence before and after a re-sort even when the data genuinely
+   * changed — verified with a probe. Asserting rendered order here would produce
+   * a test that passes when the sort is broken and fails when it is fixed.
+   *
+   * The ordering itself is covered exhaustively in `urgency.test.ts`, against the
+   * pure function, where the assertion means what it says.
+   */
+  it('hands the sorted set to the list when Smart is chosen', async () => {
+    stub = stubFetch(() => jsonResponse(200, page([chore, important])));
+    await renderList();
+    await screen.findByText('Water the plants');
+    await settleFlashList();
+
+    const user = userEvent.setup();
+    await user.press(screen.getByRole('button', { name: 'Sort by Smart' }));
+    await settleFlashList();
+
+    expect(
+      screen.getByRole('button', { name: 'Sort by Smart' }).props
+        .accessibilityState.selected,
+    ).toBe(true);
+    // Sorting is a reordering, never a filter — both rows survive it.
+    expect(screen.getByText('Water the plants')).toBeTruthy();
+    expect(screen.getByText('Submit the assignment')).toBeTruthy();
+  });
+
+  it('goes back to due-date order', async () => {
+    stub = stubFetch(() => jsonResponse(200, page([chore, important])));
+    await renderList();
+    await screen.findByText('Water the plants');
+    await settleFlashList();
+
+    const user = userEvent.setup();
+    await user.press(screen.getByRole('button', { name: 'Sort by Smart' }));
+    await settleFlashList();
+    await user.press(screen.getByRole('button', { name: 'Sort by Due date' }));
+    await settleFlashList();
+
+    expect(
+      screen.getByRole('button', { name: 'Sort by Due date' }).props
+        .accessibilityState.selected,
+    ).toBe(true);
+  });
+
+  it('defaults to the API order, so Smart is visibly a change', async () => {
+    stub = stubFetch(() => jsonResponse(200, page([chore])));
+    await renderList();
+    await screen.findByText('Water the plants');
+    await settleFlashList();
+
+    // Default is the explicable order; Smart is more interesting when you can
+    // see what it changed.
+    expect(
+      screen.getByRole('button', { name: 'Sort by Due date' }).props
+        .accessibilityState.selected,
+    ).toBe(true);
+    expect(
+      screen.getByRole('button', { name: 'Sort by Smart' }).props
+        .accessibilityState.selected,
+    ).toBe(false);
+  });
+});
