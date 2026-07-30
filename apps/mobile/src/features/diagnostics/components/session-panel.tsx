@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import {
-  useLoginMutation,
-  useLogoutMutation,
-} from '@features/auth/api/auth.api';
+import { useLogoutMutation } from '@features/auth/api/auth.api';
 import {
   selectAccessToken,
   selectAccessTokenExpiresAt,
@@ -18,41 +15,17 @@ import { useTheme } from '@shared/theme/theme-context';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 
 /**
- * The seeded demo account, which `POST /demo/reset` (re)creates on the API.
- *
- * Hardcoded here because this panel is `__DEV__` diagnostics, not a login screen —
- * the point is to exercise the API client in one tap without typing credentials on
- * an emulator keyboard.
- */
-const DEMO_EMAIL = 'demo@modulusseventeen.com';
-const DEMO_PASSWORD = 'ModulusDemo2026!';
-
-/** Renders an RTK Query error as something readable, including the API's `code`. */
-function describeError(error: unknown): string {
-  if (typeof error !== 'object' || error === null) {
-    return 'Unknown error';
-  }
-  const candidate = error as {
-    status?: unknown;
-    data?: { code?: string; message?: string };
-    error?: string;
-  };
-
-  if (candidate.data?.code) {
-    return `${candidate.data.code}: ${candidate.data.message ?? ''}`.trim();
-  }
-  // `FETCH_ERROR` and friends carry the reason on `error` rather than `data` — this
-  // is the shape a genuinely offline device produces.
-  return candidate.error ?? `HTTP ${String(candidate.status)}`;
-}
-
-/**
  * Live view of the auth session, with buttons to drive it.
  *
- * `__DEV__` scaffolding, replaced by the real Login screen and task list. It exists
- * because the API client is otherwise unobservable: without a way to sign in, the
- * re-auth wrapper and the bootstrap gate could only be tested in Jest, and "it
- * compiles and the unit tests pass" is not the same as "it talks to the API".
+ * `__DEV__` scaffolding. Its "Sign in (demo)" button is **gone**: this panel only
+ * renders on the Foundation screen, the Foundation screen only mounts when the
+ * status is already `authenticated`, and the real Login screen now covers that
+ * path anyway — so the button had become permanently disabled UI.
+ *
+ * What remains earns its place until the next PR: signing out is the only way to
+ * exercise the navigator's stack swap back to the auth screens on a device, and
+ * the real sign-out affordance lands in the task-list header. This panel goes with
+ * it.
  */
 export function SessionPanel() {
   const theme = useTheme();
@@ -64,11 +37,10 @@ export function SessionPanel() {
   const expiresAt = useAppSelector(selectAccessTokenExpiresAt);
   const endedReason = useAppSelector(selectSessionEndedReason);
 
-  const [login, loginState] = useLoginMutation();
   const [logout, logoutState] = useLogoutMutation();
   const [note, setNote] = useState<string | null>(null);
 
-  const busy = loginState.isLoading || logoutState.isLoading;
+  const busy = logoutState.isLoading;
 
   const rows: Array<[string, string]> = [
     ['status', status],
@@ -107,22 +79,6 @@ export function SessionPanel() {
       ) : null}
 
       <View style={styles.actions}>
-        <Action
-          label="Sign in (demo)"
-          disabled={busy || status === 'authenticated'}
-          onPress={async () => {
-            setNote(null);
-            const result = await login({
-              email: DEMO_EMAIL,
-              password: DEMO_PASSWORD,
-            });
-            setNote(
-              'error' in result
-                ? describeError(result.error)
-                : 'signed in — refresh token written to keystore',
-            );
-          }}
-        />
         <Action
           label="Force refresh"
           disabled={busy || status !== 'authenticated'}

@@ -125,4 +125,40 @@ module.exports = [
       'no-void': ['error', { allowAsStatement: true }],
     },
   },
+
+  {
+    files: ['src/**/*.tsx'],
+    rules: {
+      /*
+       * Ban `Pressable`'s `style={({ pressed }) => ...}` callback.
+       *
+       * ⚠️ This is a lint rule rather than a test because **a test cannot catch
+       * it**. Under Metro the NativeWind JSX runtime silently discards the
+       * callback form, so the component renders with none of its style — no
+       * height, no radius, no background. Under Jest the same code resolves
+       * perfectly, because `global.css` is never imported in a component test and
+       * css-interop stays in passthrough. Verified by mutation: reintroducing the
+       * callback form leaves the whole suite green and breaks the button on
+       * device.
+       *
+       * That asymmetry is the entire reason this rule exists. A green suite is
+       * not evidence here, so the guard has to be static.
+       *
+       * Press feedback goes through `android_ripple` instead, which is the
+       * platform-native affordance anyway.
+       *
+       * @see src/shared/ui/primary-button.tsx
+       * @see docs/ui-spec.md §8
+       */
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'JSXAttribute[name.name="style"] > JSXExpressionContainer > ArrowFunctionExpression',
+          message:
+            "NativeWind drops Pressable's style={({ pressed }) => ...} callback under Metro — the component renders unstyled on device while tests stay green. Use a plain style array plus android_ripple. See docs/ui-spec.md §8.",
+        },
+      ],
+    },
+  },
 ];

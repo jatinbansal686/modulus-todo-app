@@ -54,6 +54,27 @@ module.exports = {
   preset: '@react-native/jest-preset',
   setupFiles: ['<rootDir>/jest.setup.js'],
 
+  /*
+   * Reanimated 4's worklets runtime, resolved the way it expects under Jest.
+   *
+   * ⚠️ Without this, *importing* `react-native-reanimated` throws
+   * `TypeError: Cannot read properties of undefined (reading 'loadUnpackersWithCode')`
+   * before a single assertion runs — so every test of a screen that animates dies
+   * at module load, blaming a file nobody wrote.
+   *
+   * The cause is the platform-extension split: `NativeWorklets.native.ts` reaches
+   * straight for the TurboModule, which does not exist in Node. This resolver —
+   * shipped by `react-native-worklets` itself for exactly this — drops the
+   * `.native` extensions inside that package so Jest picks up the plain
+   * `NativeWorklets.ts` stub instead.
+   *
+   * Deliberately chosen over `jest.mock('react-native-reanimated', ...)` with the
+   * bundled `mock.js`: that replaces the whole library, so `useAnimatedStyle`
+   * returns nothing and an animated component's real code path is never executed.
+   * A test that renders a screen would then be proving the mock works.
+   */
+  resolver: 'react-native-worklets/jest/resolver.js',
+
   // No `moduleNameMapper` for the @shared/@store/... aliases, on purpose. Jest
   // transforms through babel-jest, which applies babel.config.js, which already
   // contains `babel-plugin-module-resolver` — so aliases are rewritten before
@@ -62,6 +83,30 @@ module.exports = {
   transformIgnorePatterns: [
     `node_modules/(?!(${PACKAGES_NEEDING_TRANSFORM.join('|')})/)`,
   ],
+
+  /*
+   * Also transform `.mjs`, which the React Native preset does not.
+   *
+   * Its transform is keyed `^.+\.(js|ts|tsx)$`, so a `.mjs` file matches nothing
+   * and is handed to Jest verbatim — `SyntaxError: Unexpected token 'export'`,
+   * regardless of what `transformIgnorePatterns` says. The two settings answer
+   * different questions ("should this be transformed?" versus "with what?") and
+   * only the first one is usually the culprit, which makes this a confusing hour.
+   *
+   * `lucide-react-native` is the package that needs it: its `exports` map has a
+   * dedicated `"react-native"` condition pointing at an ESM `.mjs` bundle. Jest
+   * resolves under that condition via the RN preset and gets ESM.
+   *
+   * Merged with the preset's transform rather than replacing it — Jest treats
+   * `transform` and `moduleNameMapper` as special cases and merges both.
+   *
+   * The alternative, mocking the icon set, was rejected: every icon renders
+   * through `react-native-svg`, so mocking it would quietly stop testing that
+   * icons mount at all.
+   */
+  transform: {
+    '^.+\\.mjs$': 'babel-jest',
+  },
 
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

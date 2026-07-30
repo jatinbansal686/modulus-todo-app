@@ -170,6 +170,30 @@ shape that triggers the bug.
 Verified by a smoke assertion in the native smoke panel (see §10), so if the bug
 bites it names itself at scaffold time rather than at hour 24.
 
+### The variant that actually bit us: `Pressable`'s callback `style`
+
+The probe above passes a style **object**, which works. A style **function** does
+not:
+
+```tsx
+// ✗ Silently discarded under Metro. No height, no radius, no background,
+//   label flush left. Found on device; `uiautomator dump` measured the button
+//   at 63px instead of 52dp.
+<Pressable style={({ pressed }) => [styles.button, { opacity: pressed ? 0.85 : 1 }]} />
+
+// ✓ Plain array, native press feedback.
+<Pressable android_ripple={{ color: theme.onAccent }} style={[styles.button, { backgroundColor }]} />
+```
+
+**A test cannot catch this.** Jest never imports `global.css`, so css-interop stays
+in passthrough and resolves the callback correctly — reintroducing the broken form
+was mutation-tested and left the entire suite green. The guard is therefore a
+`no-restricted-syntax` ESLint rule (`eslint.config.js`), which is static and does
+not depend on which runtime is loaded.
+
+Press feedback goes through `android_ripple`, which is the platform-native
+affordance regardless.
+
 ---
 
 ## 9. Accessibility — the tests physically depend on it

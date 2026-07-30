@@ -21,6 +21,25 @@ module.exports = {
   ],
   plugins: [
     /*
+     * `export * as ns from '...'` support, which the React Native preset does not
+     * enable and which `zod@4` requires.
+     *
+     * ⚠️ This failure is invisible to the test suite, which is what makes it worth
+     * a comment. `zod`'s `exports` map sends the `require` condition to a CommonJS
+     * build and the `import` condition to ESM. Jest resolves the former, so every
+     * test passes; Metro resolves the latter and dies bundling with
+     * "Export namespace should be first transformed by
+     * @babel/plugin-transform-export-namespace-from" — a red screen on the device
+     * with a green suite on the machine.
+     *
+     * Declared as an explicit devDependency rather than relied on transitively:
+     * it is already in the tree via Babel's own packages, and a hoisted transitive
+     * that silently disappears on the next install is precisely the class of
+     * breakage this project pins against.
+     */
+    '@babel/plugin-transform-export-namespace-from',
+
+    /*
      * Path aliases.
      *
      * These MUST mirror `compilerOptions.paths` in tsconfig.json exactly. Metro

@@ -5,12 +5,28 @@
  * compile error for an unknown route, and so screen props get their params typed
  * without each screen re-declaring them.
  *
- * The full inventory — Login, Register, TaskList, TaskComposer — arrives with the
- * screens that implement it. Adding a route here before its screen exists would
- * produce a navigator that can be navigated into and render nothing.
+ * ## One param list, two mutually exclusive groups
+ *
+ * `Login`/`Register` and the signed-in screens never coexist in the navigator —
+ * the root navigator mounts one group or the other based on auth status. They
+ * still share one param list, because that is what React Navigation's `navigate`
+ * typing binds to; splitting it would mean maintaining a hand-written union for
+ * every `useNavigation()` call to typecheck.
+ *
+ * The safety that appears to give up is not real. Navigating from `Login` to a
+ * signed-in screen would not "work but be wrong" — it throws, because the target
+ * is not mounted. The mounting rule is the guarantee, not the type.
+ *
+ * `TaskList` and `TaskComposer` arrive with the screens that implement them.
+ * Adding a route here before its screen exists produces a navigator that can be
+ * navigated into and renders nothing.
  */
 export type RootStackParamList = {
-  /** Foundation/diagnostics screen. Replaced by the real app stack in later PRs. */
+  /** Sign-in. The signed-out entry point. */
+  Login: undefined;
+  /** Sign-up. Auto-signs-in on success, so it has no success destination. */
+  Register: undefined;
+  /** Foundation/diagnostics screen. Replaced by the task list in the next PR. */
   Foundation: undefined;
 };
 

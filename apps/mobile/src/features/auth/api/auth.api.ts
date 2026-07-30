@@ -55,7 +55,20 @@ export const authApi = api.injectEndpoints({
      * when the access token has already expired — which is exactly when a user is
      * most likely to be reaching for "sign out".
      */
-    logout: builder.mutation<void, void>({
+    /*
+     * ⚠️ Returns `null`, not `void`.
+     *
+     * RTK Query validates a `queryFn`'s result and rejects `{ data: undefined }`
+     * outright — "returned an object containing neither a valid `error` and
+     * `result`". With `<void, void>` the only expressible success value is
+     * `undefined`, so every sign-out logged an error and resolved as a *failed*
+     * mutation, even though the sign-out itself had completely succeeded.
+     *
+     * It went unnoticed because nothing reads the result: the session clears
+     * either way. It surfaced on device as a red LogBox on every sign-out.
+     * `null` is a defined value, so the mutation resolves as the success it is.
+     */
+    logout: builder.mutation<null, void>({
       queryFn: async (_arg, queryApi, _extraOptions, baseQuery) => {
         const { secretStore } = getThunkExtra(queryApi.extra);
         const refreshToken = await secretStore.getRefreshToken();
@@ -74,11 +87,32 @@ export const authApi = api.injectEndpoints({
         await secretStore.clearRefreshToken();
         queryApi.dispatch(signedOut());
 
-        // Drop every cached response. Without this, the next user to sign in on this
-        // device briefly sees the previous user's tasks from cache.
-        queryApi.dispatch(api.util.resetApiState());
+        return { data: null };
+      },
 
-        return { data: undefined };
+      /**
+       * Drops every cached response, once the sign-out has settled.
+       *
+       * Without the reset, the next user to sign in on this device briefly sees
+       * the previous user's tasks from cache.
+       *
+       * ⚠️ It has to happen **here** rather than inside `queryFn`, and the reason
+       * is not stylistic. `resetApiState()` tears down every in-flight request —
+       * including the logout mutation that dispatched it. Called from inside
+       * `queryFn`, the mutation aborts itself and resolves as
+       * `{ error: { name: 'AbortError' } }`: a sign-out that fully succeeded,
+       * reported as a failure. Awaiting `queryFulfilled` first means the mutation
+       * has already settled, so there is nothing left to abort.
+       */
+      onQueryStarted: async (_arg, { dispatch, queryFulfilled }) => {
+        try {
+          await queryFulfilled;
+        } finally {
+          // `finally`, not the success path: a sign-out that failed still cleared
+          // the keystore and the session, so leaving the cache populated would
+          // strand the previous user's data on the device.
+          dispatch(api.util.resetApiState());
+        }
       },
     }),
   }),

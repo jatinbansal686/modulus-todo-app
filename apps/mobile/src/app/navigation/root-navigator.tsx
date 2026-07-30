@@ -7,6 +7,8 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuthSession } from '@features/auth/model/use-auth-session';
+import { LoginScreen } from '@features/auth/screens/login-screen';
+import { RegisterScreen } from '@features/auth/screens/register-screen';
 import { FoundationScreen } from '@features/diagnostics/screens/foundation-screen';
 import { useTheme } from '@shared/theme/theme-context';
 
@@ -63,11 +65,34 @@ export function RootNavigator() {
         }}
       >
         {/*
-          One screen for both states for now. The Login/Register stack and the task
-          list replace this in the screens PRs; the Foundation screen exercises the
-          API client for either status so the flow is verifiable on device today.
+          ⚠️ Two mutually exclusive groups, chosen by auth status — never a
+          `navigate()` between them.
+
+          This is the whole reason the auth flow cannot leak. When `status` flips,
+          React Navigation unmounts one group and mounts the other, so after a
+          sign-out there is no history entry pointing back into the app and after a
+          sign-in the login screen is not one back-gesture away. Reaching the same
+          effect with `navigate('TaskList')` would leave both on the stack and make
+          the back button a security question.
+
+          It is also why neither auth screen navigates on success: they have
+          nowhere to go. Dispatching `signedIn` is the navigation.
         */}
-        <Stack.Screen name="Foundation" component={FoundationScreen} />
+        {status === 'authenticated' ? (
+          <Stack.Group>
+            {/*
+              Still the Foundation screen. The task list replaces it in the next
+              PR; keeping it here means the signed-in half of this swap is
+              verifiable on device today rather than on trust.
+            */}
+            <Stack.Screen name="Foundation" component={FoundationScreen} />
+          </Stack.Group>
+        ) : (
+          <Stack.Group>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </Stack.Group>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
