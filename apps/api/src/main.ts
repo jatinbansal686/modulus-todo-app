@@ -2,9 +2,12 @@ import { ConsoleLogger, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { getConnectionToken } from '@nestjs/mongoose';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import type { Connection } from 'mongoose';
 import { AppModule } from './app.module';
 import { configureApp } from './bootstrap/configure-app';
+import { syncDatabaseIndexes } from './database/sync-indexes';
 import type { AppConfig } from './config/configuration';
 
 async function bootstrap(): Promise<void> {
@@ -69,6 +72,12 @@ async function bootstrap(): Promise<void> {
   // Lets Nest run shutdown hooks so Mongo connections close cleanly on SIGTERM
   // instead of being severed mid-query when the platform recycles the instance.
   app.enableShutdownHooks();
+
+  // Create the declared indexes before accepting traffic. Required because
+  // `autoIndex` is off in production — see syncDatabaseIndexes for what is silently
+  // unenforced without this. Runs before listen() so the very first request already
+  // has the unique constraints in place.
+  await syncDatabaseIndexes(app.get<Connection>(getConnectionToken()));
 
   // Bind to 0.0.0.0, and take the port from the environment. Hardcoding the port or
   // binding to localhost is the single most common first-deploy failure on a PaaS:
