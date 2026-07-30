@@ -51,6 +51,41 @@ All colours, spacing, radii and type sizes come from **one** file,
 `src/shared/theme/index.ts` re-exports it with types plus the semantic light/dark
 themes. Components read the semantic theme (`theme.accent`), never the raw ramps.
 
+## The API client
+
+One RTK Query slice (`shared/api/api.ts`), which features inject endpoints into, so
+there is a single cache and a single mental model.
+
+**Tokens live in two different places, on purpose.**
+
+| Token                  | Where              | Why                                                                                                     |
+| ---------------------- | ------------------ | ------------------------------------------------------------------------------------------------------- |
+| Access (JWT, 15 min)   | Redux, memory only | It is what `prepareHeaders` attaches; never written to disk, so it cannot be recovered from the device. |
+| Refresh (opaque, 30 d) | OS keystore        | A long-lived credential. Never enters Redux, so a state dump in a bug report cannot leak it.            |
+
+`shared/api/base-query.ts` is the highest-value file here: `fetchBaseQuery` plus a
+mutex-serialised `401 → refresh → retry`. Read the comment at the top before
+changing it — four of its behaviours are load-bearing and none is obvious:
+
+1. The refresh **bypasses the wrapper** (`refresh-session.ts`, a plain `fetch`).
+   Routing the repair through the transport being repaired recurses forever.
+2. `release()` is in a `finally`. A throw while holding the lock would wedge every
+   later request for the life of the process.
+3. It branches on the API's **auth sub-code**, not the bare 401 —
+   `AUTH_TOKEN_EXPIRED` is repairable, `AUTH_TOKEN_INVALID` is not, and
+   `AUTH_CREDENTIALS_INVALID` is a wrong password that must pass straight through.
+4. A refresh that fails **without a verdict** (offline, timeout, 429, 5xx) keeps the
+   session. Only an explicit server rejection signs the user out.
+
+### The bootstrap gate
+
+The keystore reads asynchronously, so on cold start the app genuinely does not know
+whether anyone is signed in — hence `status: 'bootstrapping' | 'authenticated' |
+'anonymous'` and a native splash held until it resolves, **capped at 1.5s**. Past the
+cap the app renders on the strength of a refresh token merely existing and finishes
+refreshing in the background; the bootstrap holds the shared mutex throughout, so
+requests made in that window queue rather than race.
+
 ## The native smoke panel
 
 `src/features/diagnostics` renders one row per native module with a live

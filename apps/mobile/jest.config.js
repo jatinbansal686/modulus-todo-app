@@ -18,12 +18,16 @@
  * test touching an animated component fails to parse — with an error that names
  * Reanimated rather than worklets.
  *
- * ⚠️ `immer` is here for a subtler reason and is not React Native at all. It is a
- * transitive dependency of Redux Toolkit, and its `exports` map has a dedicated
- * `"react-native"` condition that resolves to `dist/immer.legacy-esm.js` — an ESM
- * bundle. Metro handles that happily; Jest, resolving under the same condition via
- * the RN preset, gets `export {` and throws `SyntaxError: Unexpected token 'export'`
- * pointing at immer while the stack blames whichever slice imported RTK first.
+ * ⚠️ `immer` and `react-redux` are here for a subtler reason, and neither is React
+ * Native. Both publish an `exports` map with a dedicated `"react-native"` condition
+ * that resolves to a `*.legacy-esm.js` bundle. Metro handles that happily; Jest,
+ * resolving under the same condition via the RN preset, gets `import`/`export` and
+ * throws `SyntaxError: Cannot use import statement outside a module` — while the
+ * stack blames whichever slice imported Redux first.
+ *
+ * Checked across the whole Redux family: only these two do it. `@reduxjs/toolkit`,
+ * `redux`, `reselect` and `redux-thunk` all resolve to CommonJS and must NOT be
+ * added — transforming them is wasted work on every test run.
  */
 const PACKAGES_NEEDING_TRANSFORM = [
   '@react-native',
@@ -34,6 +38,7 @@ const PACKAGES_NEEDING_TRANSFORM = [
   'lucide-react-native',
   'nativewind',
   'react-native',
+  'react-redux',
   'react-native-css-interop',
   'react-native-keychain',
   'react-native-mmkv',

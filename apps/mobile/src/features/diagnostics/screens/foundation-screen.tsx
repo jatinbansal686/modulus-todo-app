@@ -17,6 +17,7 @@ import {
 import { tokens } from '@shared/theme';
 import { useTheme } from '@shared/theme/theme-context';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { SessionPanel } from '../components/session-panel';
 import { SmokePanel } from '../components/smoke-panel';
 
 import type { TaskPriority } from '@shared/types/task';
@@ -73,6 +74,8 @@ export function FoundationScreen() {
         </View>
 
         <SmokePanel />
+
+        <SessionPanel />
 
         <Section title="Theme" theme={theme}>
           <View style={styles.segmented}>
