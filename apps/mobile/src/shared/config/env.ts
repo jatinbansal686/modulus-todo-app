@@ -30,13 +30,15 @@ const DEV_API_URL = 'http://10.0.2.2:3000';
 /**
  * Where the API lives in a release build.
  *
- * ⚠️ Still a sentinel — the API is not deployed yet. Replaced with the real hosted
- * origin before the signed APK is built. `.invalid` is a reserved TLD that can
- * never resolve, so this can only ever fail closed, and
- * {@link assertProductionUrlConfigured} turns forgetting it into a loud failure at
- * launch rather than an APK that silently cannot reach anything.
+ * A free-tier instance: it spins down after ~15 minutes idle and takes up to a minute
+ * to wake, which is why {@link REQUEST_TIMEOUT_MS} is generous and why the auth
+ * bootstrap caps the splash rather than waiting for the network.
+ *
+ * {@link assertProductionUrlConfigured} still guards this — it throws on launch if the
+ * value is ever reverted to a placeholder, so a release APK cannot ship pointing at
+ * nothing.
  */
-const PROD_API_URL = 'https://REPLACE-ME.invalid';
+const PROD_API_URL = 'https://modulus-todo-api.onrender.com';
 
 /**
  * The API origin for this build. Includes scheme and host, no trailing slash and

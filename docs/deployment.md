@@ -57,6 +57,13 @@ Total time: ~20 minutes, most of it waiting for the first build.
 4. **Apply**. The first build takes ~3–5 minutes: `npm ci` compiles argon2 from
    source.
 
+> **If the build fails with `sh: 1: nest: not found`**, the build command is missing
+> `--include=dev`. Render sets `NODE_ENV=production`, npm honours that by omitting
+> devDependencies, and the compiler (`@nestjs/cli`, TypeScript) lives there. The
+> blueprint already accounts for this; the note is here because the install step
+> _succeeds_ and reports a believable package count before the build dies, so the
+> error points at the wrong thing.
+
 ### Verify
 
 ```bash
@@ -89,15 +96,19 @@ means those guarantees are missing — see `src/database/sync-indexes.ts`.
 
 ## 3. Point the mobile app at it
 
-Replace the sentinel in `apps/mobile/src/shared/config/env.ts`:
+Already done — `apps/mobile/src/shared/config/env.ts` reads:
 
 ```ts
 const PROD_API_URL = 'https://modulus-todo-api.onrender.com';
 ```
 
-It currently reads `https://REPLACE-ME.invalid`, and
-`assertProductionUrlConfigured()` throws on launch in a release build while it does —
-so a release APK cannot accidentally ship pointing at nothing.
+Only change this if the service is recreated under a different name.
+`assertProductionUrlConfigured()` throws on launch in a release build if the value is
+ever reverted to a placeholder, so a release APK cannot ship pointing at nothing.
+
+`DEV_API_URL` stays on `10.0.2.2:3000`, so debug builds keep talking to a local API.
+To point a debug build at the hosted one temporarily, change that constant and reload
+the bundle — no rebuild needed, since it is plain JavaScript.
 
 ---
 

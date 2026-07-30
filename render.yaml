@@ -23,7 +23,17 @@ services:
     # `npm ci` — not `npm install` — so the lockfile is authoritative. Deliberately
     # NOT `--ignore-scripts`: argon2 is a native addon whose `node-gyp-build` step
     # runs as an install script, and skipping it yields a module that cannot hash.
-    buildCommand: npm ci && npm run build
+    #
+    # ⚠️ `--include=dev` is required and not optional. `NODE_ENV=production` is set
+    # below, and npm honours it by omitting devDependencies — but the *build* needs
+    # them: `@nestjs/cli` provides the `nest` binary and TypeScript does the
+    # compiling, and both are devDependencies. Without this the install succeeds,
+    # reports a plausible-looking package count, and then dies with
+    # `sh: 1: nest: not found`. Verified by hitting exactly that on the first deploy.
+    #
+    # Nothing ships as a result: the runtime only ever runs `dist/`, which is why
+    # these belong in devDependencies in the first place.
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: node dist/main
 
     # Mounted at the root, outside the /api/v1 prefix, precisely so this path stays
