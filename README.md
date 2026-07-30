@@ -10,12 +10,14 @@ sorted by a transparent urgency score that blends all three time/priority signal
 
 ## ⏱️ Evaluate this in 5 minutes
 
-|                           |                                  |
-| ------------------------- | -------------------------------- |
-| 📱 **Install the app**    | _APK link — added at release_    |
-| 🔑 **Demo account**       | _credentials — added at release_ |
-| 🌐 **API docs (Swagger)** | _hosted URL — added at release_  |
-| 🎬 **90-second demo**     | _video — added at release_       |
+|                            |                                                                |
+| -------------------------- | -------------------------------------------------------------- |
+| 📱 **Install the app**     | _APK link — added at release_                                  |
+| 🔑 **Demo account**        | `demo@modulusseventeen.com` · `ModulusDemo2026!`               |
+| 🌐 **API docs (Swagger)**  | **https://modulus-todo-api.onrender.com/docs**                 |
+| ❤️ **API health**          | **https://modulus-todo-api.onrender.com/health**               |
+| 🔄 **Reset the demo data** | `POST https://modulus-todo-api.onrender.com/api/v1/demo/reset` |
+| 🎬 **90-second demo**      | _video — added at release_                                     |
 
 > ⚠️ **The API is on a free tier and sleeps after 15 minutes idle.** The first request can take
 > up to a minute while it wakes up. Everything is instant after that — this is a hosting-tier
