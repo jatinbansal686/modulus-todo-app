@@ -215,3 +215,34 @@ describe('sortByUrgency', () => {
     expect(sortByUrgency([], NOW)).toEqual([]);
   });
 });
+
+/**
+ * The worked example printed in the README, asserted here.
+ *
+ * A README that shows arithmetic invites a reader to check it, so the numbers are
+ * pinned against the real function rather than left to drift. If the weights or
+ * any horizon change, this fails and the README has to be updated with it.
+ *
+ * @see README.md § Smart sort — "Worked example"
+ */
+describe('README worked example', () => {
+  it('scores a HIGH task scheduled +6h and due -10h at 0.7376', () => {
+    const subject = task({
+      priority: 'HIGH',
+      scheduledAt: hoursFromNow(6),
+      dueAt: hoursFromNow(-10),
+    });
+
+    const { priority, deadline, schedule, overdue, total } = scoreUrgency(
+      subject,
+      NOW,
+    );
+
+    expect(priority).toBeCloseTo(0.3, 4);
+    // Already due, so deadline proximity saturates at 1 regardless of how late.
+    expect(deadline).toBeCloseTo(0.3, 4);
+    expect(schedule).toBeCloseTo(0.1125, 4);
+    expect(overdue).toBeCloseTo(0.0251, 4);
+    expect(total).toBeCloseTo(0.7376, 4);
+  });
+});
