@@ -9,7 +9,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthSession } from '@features/auth/model/use-auth-session';
 import { LoginScreen } from '@features/auth/screens/login-screen';
 import { RegisterScreen } from '@features/auth/screens/register-screen';
-import { FoundationScreen } from '@features/diagnostics/screens/foundation-screen';
+import { TaskComposerScreen } from '@features/tasks/screens/task-composer-screen';
+import { TaskListScreen } from '@features/tasks/screens/task-list-screen';
 import { useTheme } from '@shared/theme/theme-context';
 
 import type { RootStackParamList } from './types';
@@ -79,14 +80,24 @@ export function RootNavigator() {
           nowhere to go. Dispatching `signedIn` is the navigation.
         */}
         {status === 'authenticated' ? (
-          <Stack.Group>
+          <>
+            <Stack.Group>
+              <Stack.Screen name="TaskList" component={TaskListScreen} />
+            </Stack.Group>
+
             {/*
-              Still the Foundation screen. The task list replaces it in the next
-              PR; keeping it here means the signed-in half of this swap is
-              verifiable on device today rather than on trust.
+              The composer is a native-stack **modal**, declared in its own group
+              so the presentation applies to it alone. It creates and edits: the
+              route's optional `taskId` decides which.
             */}
-            <Stack.Screen name="Foundation" component={FoundationScreen} />
-          </Stack.Group>
+            <Stack.Group screenOptions={{ presentation: 'modal' }}>
+              <Stack.Screen
+                name="TaskComposer"
+                component={TaskComposerScreen}
+                initialParams={{}}
+              />
+            </Stack.Group>
+          </>
         ) : (
           <Stack.Group>
             <Stack.Screen name="Login" component={LoginScreen} />

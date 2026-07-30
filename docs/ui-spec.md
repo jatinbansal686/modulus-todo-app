@@ -211,12 +211,18 @@ padded from `useSafeAreaInsets()`, never from the deprecated `SafeAreaView`.
 
 ---
 
-## 10. Native smoke panel
+## 10. Native smoke panel — served its purpose, now removed
 
-`src/features/diagnostics` renders one row per native module with a live
-pass/fail assertion. It exists because installing thirteen native modules and then
-building gives no bisect: a failure surfaces as a blank red screen with a stack
-trace pointing at the bridge.
+`src/features/diagnostics` rendered one row per native module with a live
+pass/fail assertion. It existed because installing thirteen native modules and
+then building gives no bisect: a failure surfaces as a blank red screen with a
+stack trace pointing at the bridge. With the panel, a broken library **named
+itself** — it reported `SMOKE: 9/9 passed` on device through the scaffold PRs.
 
-With the panel, a broken library **names itself**. It is `__DEV__`-only and is not
-part of the shipped UI.
+It was **deleted once the task list landed**, because the screen hosting it was
+the placeholder the task list replaced. Keeping it would have meant an
+unreachable screen in the bundle: it was never `__DEV__`-gated at the navigator,
+so it would have shipped in the release build with no way to reach it.
+
+The verification it performed is recorded in the PRs that used it. If the native
+stack ever needs re-bisecting, it is one `git revert` away.

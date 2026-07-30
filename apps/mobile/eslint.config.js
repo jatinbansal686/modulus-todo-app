@@ -93,15 +93,6 @@ module.exports = [
   },
 
   {
-    // Diagnostics deliberately log to the console: the smoke summary is a single
-    // greppable line the build harness asserts on between native-module installs.
-    files: ['src/features/diagnostics/**/*.{ts,tsx}'],
-    rules: {
-      'no-console': 'off',
-    },
-  },
-
-  {
     // The Jest setup file runs inside Jest but is not itself a test, so it does
     // not match the RN config's test-file glob and would otherwise be linted
     // without the `jest` global in scope.

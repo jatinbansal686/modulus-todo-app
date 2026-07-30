@@ -1,6 +1,7 @@
 import { createMemorySecretStore } from '@shared/lib/keychain/memory-secret-store';
 import { createTestStore } from '@shared/test/create-test-store';
 import { jsonResponse, stubFetch } from '@shared/test/fetch-stub';
+import { settleReduxBatching } from '@shared/test/flush';
 import { authApi } from './auth.api';
 
 import type { FetchStub } from '@shared/test/fetch-stub';
@@ -10,6 +11,10 @@ let stub: FetchStub;
 afterEach(() => {
   stub.restore();
 });
+
+// See `settleReduxBatching`: dispatching `initiate()` straight at a store leaves
+// Redux's batching timers to fire after Jest tears the environment down.
+afterAll(settleReduxBatching);
 
 describe('logout', () => {
   /**
