@@ -5,9 +5,8 @@ import type { SecretStore } from './types';
 /**
  * Service name the credential is filed under.
  *
- * Explicit rather than defaulted, so this app's entry is identifiable on the device
- * and so the diagnostics smoke check — which uses its own service — can never
- * overwrite the real session.
+ * Explicit rather than defaulted, so this app's entry is identifiable among the
+ * device's stored credentials rather than filed under the bundle id alone.
  */
 const SERVICE = 'com.jatinbansal.modulustodo.refresh';
 

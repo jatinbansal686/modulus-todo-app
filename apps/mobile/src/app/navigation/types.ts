@@ -26,8 +26,18 @@ export type RootStackParamList = {
   Login: undefined;
   /** Sign-up. Auto-signs-in on success, so it has no success destination. */
   Register: undefined;
-  /** Foundation/diagnostics screen. Replaced by the task list in the next PR. */
-  Foundation: undefined;
+
+  /** The app. Root of the signed-in group. */
+  TaskList: undefined;
+  /**
+   * Create *and* edit, as one screen.
+   *
+   * `taskId` present means edit, absent means create. One route rather than two
+   * because the form is identical — a separate `TaskEdit` route would be the same
+   * component with the same fields and a second set of navigation types to keep
+   * in step.
+   */
+  TaskComposer: { taskId?: string };
 };
 
 declare global {

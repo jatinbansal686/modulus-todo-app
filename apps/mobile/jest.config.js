@@ -108,14 +108,7 @@ module.exports = {
     '^.+\\.mjs$': 'babel-jest',
   },
 
-  collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
-    // Dev-only diagnostics. Its whole purpose is to talk to native modules, which
-    // do not exist in Node — covering it would mean mocking the very things it
-    // exists to verify.
-    '!src/features/diagnostics/**',
-  ],
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
   // Reported, never gated. A coverage threshold fails the build for a reason
   // unrelated to correctness, usually at the worst possible moment.
   coverageReporters: ['text-summary', 'lcov'],
