@@ -33,6 +33,75 @@ sorted by a transparent urgency score that blends all three time/priority signal
 
 ---
 
+## Using the app
+
+### 1. Install it
+
+Download **[modulus-todo-v1.0.0.apk](https://github.com/jatinbansal686/modulus-todo-app/releases/download/v1.0.0/modulus-todo-v1.0.0.apk)** onto an Android phone or emulator (Android 7.0 / API 24 or newer, `arm64-v8a`).
+
+Android will warn about installing an app from outside the Play Store — that warning is expected for any APK shared directly. Allow it for your browser or file manager, or install over a cable:
+
+```bash
+adb install modulus-todo-v1.0.0.apk
+```
+
+### 2. Sign in
+
+Use the seeded demo account — it already contains ten tasks chosen so the **Smart** sort visibly reorders them:
+
+|              |                             |
+| ------------ | --------------------------- |
+| **Email**    | `demo@modulusseventeen.com` |
+| **Password** | `ModulusDemo2026!`          |
+
+Or tap **Create one** on the sign-in screen to register a fresh account. Registering signs you straight in — there's no "now go and log in" step.
+
+> The very first sign-in may take up to a minute while the free-tier server wakes up. If it times out, the app says _"The server is waking up"_ — just tap **Sign in** again.
+
+### 3. What each screen does
+
+**Task list** — everything you own, ordered by deadline.
+
+| To do this         | Do that                                                                                             |
+| ------------------ | --------------------------------------------------------------------------------------------------- |
+| Add a task         | Tap the blue **+** button, bottom right                                                             |
+| Mark one done      | Tap its checkbox — it updates immediately, and the title gets a line through it plus a `DONE` badge |
+| Edit one           | Tap anywhere on the task's body                                                                     |
+| Delete one         | Tap the bin icon on the right, then confirm                                                         |
+| Reorder by urgency | Tap **Smart** at the top (**Due date** switches back)                                               |
+| Refresh            | Pull down on the list                                                                               |
+| Switch light/dark  | Tap the sun/moon icon, top right                                                                    |
+| Sign out           | Tap the exit icon, top right                                                                        |
+
+**New task / Edit task** — the same screen for both.
+
+| Field             | Notes                                                                  |
+| ----------------- | ---------------------------------------------------------------------- |
+| **Title**         | The only required field                                                |
+| **Notes**         | Optional longer description                                            |
+| **Priority**      | LOW · MEDIUM · HIGH · URGENT — feeds the Smart sort                    |
+| **Scheduled for** | When you intend to _work on_ it                                        |
+| **Due by**        | When it becomes _late_ — this is what drives the red "Overdue" warning |
+
+For both dates, tap a chip — **Today 6pm**, **Tonight**, **Tomorrow 9am**, **This weekend** — to set it in one tap, or **Custom…** to pick any date and time. Tap the **✕** beside a chosen date to clear it.
+
+### 4. One more thing to try
+
+Turn off wi-fi and pull down to refresh. You get a designed error screen naming what went
+wrong — not a blank list, which would be indistinguishable from having no tasks.
+
+(The three headline things to try are listed above, under _Evaluate this in 5 minutes_.)
+
+### 5. Starting over
+
+To restore the demo account to its original ten tasks at any point:
+
+```bash
+curl -X POST https://modulus-todo-api.onrender.com/api/v1/demo/reset
+```
+
+---
+
 ## Screenshots
 
 |                                                                     |                                                                             |                                                                                    |
